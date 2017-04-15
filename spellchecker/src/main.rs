@@ -2,29 +2,37 @@ extern crate regex;
 
 use regex::Regex;
 use std::env;
+use std::fs::File;
+use std::io::prelude::*;
+use std::collections::HashMap;
 use std::io::{Read,BufReader,BufRead,stdout,Write,stdin};
 
 fn main() {
-    let args = env::args().collect::<Vec<_>>();
+    let args = env::args().collect::<String>();
+    let mut hmap = read_corpus(&args).unwrap();
+    write_output(stdout(), &hmap);
+
 }
 
-fn read_input<R: Read>(reader: R) -> Vec<String> {
-	let mut words: Vec<String> = vec![];
-	let mut lines = BufReader::new(reader).lines();
-	
-	let re = Regex::new(r"[^\P{P}-]+").unwrap();
+fn read_corpus(filename: &str) -> std::io::Result<HashMap<String, usize>>{
+	let file = File::open("corpus.txt")?;
+	let mut hmap = HashMap::<String, usize>::new();
+	let mut buf_reader = BufReader::new(file);
+	let mut contents = String::new();
+	buf_reader.read_to_string(&mut contents)?;
+	for c in contents.split(" ") {
+  		let val = hmap.entry(c.to_string()).or_insert(0);
 
-	while let Some(Ok(line)) = lines.next() {
-		//strip punctuation
-		let sw = re.replace_all(line.as_str(), "").to_string().replace("--", " ");
-		//split words between spaces
-		let sw_split = sw.split(" ");
-		for s in sw_split {
-			if !s.trim().is_empty() {
-				words.push(s.trim().to_lowercase());
-			}
-		}
+        // add 1 to value
+        *val += 1;
 	}
+	Ok(hmap)
+}
 
-	words
+
+fn write_output<W: Write>(mut writer: W, hm: &HashMap<String, usize> ) {
+	for (k, v) in hm {
+		writeln!(writer, "{}: {}", k, v).unwrap();
+	}
+	
 }
