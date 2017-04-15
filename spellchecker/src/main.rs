@@ -1,16 +1,11 @@
 extern crate regex;
 
 use regex::Regex;
+use std::env;
 use std::io::{Read,BufReader,BufRead,stdout,Write,stdin};
 
 fn main() {
-    let corpus = read_corpus();
-    let input = read_input(stdin());
-    write_output(stdout(), &corpus, &spellchecker(&input));
-}
-
-fn read_corpus() {
-
+    let args = env::args().collect::<Vec<_>>();
 }
 
 fn read_input<R: Read>(reader: R) -> Vec<String> {
@@ -32,7 +27,4 @@ fn read_input<R: Read>(reader: R) -> Vec<String> {
 	}
 
 	words
-}
-
-fn write_output<W: Write>(mut writer: W, bmap: &BTreeMap<String, usize>) {
 }
