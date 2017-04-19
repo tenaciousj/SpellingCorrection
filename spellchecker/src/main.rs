@@ -1,6 +1,5 @@
 use std::env;
 use std::fs::File;
-use std::io::prelude::*;
 use std::collections::HashMap;
 use std::io::{Read,BufReader,BufRead,stdout,Write,stdin};
 use std::cmp::Ordering;
@@ -39,6 +38,8 @@ fn main() {
     let corpus_file = &args[1];
     let corpus = read_corpus(&corpus_file).unwrap();
     let input = read_input(stdin());
+    let result = spell_check(&input, &corpus);
+    write_output(stdout(), &result);
 }
 
 fn read_corpus(filename: &str) -> std::io::Result<HashMap<String, usize>>{
@@ -77,13 +78,13 @@ fn spell_check(vec_str: &Vec<String>, corpus: &HashMap<String, usize>) -> Vec<St
 		if corpus.contains_key(check_word) {
 			output_vec.push(check_word.to_string());
 		} else {
-			let mut one_edit_vec = create_variations(&check_word);
+			let one_edit_vec = create_variations(&check_word);
 			let mut wordfreq_vec = Vec::<WordFreq>::new();
 			for edited_word in one_edit_vec {
 				if corpus.contains_key(&edited_word) {
 					wordfreq_vec.push( WordFreq { freq: corpus[&edited_word], word: edited_word.clone()});
 				}
-				let mut two_edit_vec = create_variations(&edited_word);
+				let two_edit_vec = create_variations(&edited_word);
 				for edited_word2 in two_edit_vec {
 					if corpus.contains_key(&edited_word2) {
 						wordfreq_vec.push( WordFreq { freq: corpus[&edited_word2], word: edited_word2});
@@ -117,10 +118,6 @@ fn create_variations(word: &String) -> Vec<String> {
 	temp_vec = insert_edit(&word);
 	vec_variations.append(&mut temp_vec);
 
-	// vec_variations.append(delete_edit(&word));
-	// vec_variations.append(transpose_edit(&word));
-	// vec_variations.append(replace_edit(&word));
-	// vec_variations.append(insert_edit(&word));
 
 	vec_variations
 }
@@ -135,9 +132,14 @@ fn delete_edit(word: &str) -> Vec<String> {
 
 fn transpose_edit(word: &str) -> Vec<String> {
 	let mut output_vec = vec![];
-	for i in 0..word.len()-1 {
-		output_vec.push(word[..i].to_string() + &word[i+1..i+2] + &word[i..i+1] + &word[i+2..]);
+	if word.len() < 1 {
+		output_vec.push(word.to_string());
+	} else {
+		for i in 0..word.len()-1 {
+			output_vec.push(word[..i].to_string() + &word[i+1..i+2] + &word[i..i+1] + &word[i+2..]);
+		}
 	}
+
 	output_vec
 }
 
@@ -153,7 +155,7 @@ fn replace_edit(word: &str) -> Vec<String> {
 	output_vec
 }
 
-fn insert_edit(word: &String) -> Vec<String> {
+fn insert_edit(word: &str) -> Vec<String> {
 	let mut output_vec = vec![];
 	let alpha = "abcdefghijklmnopqrstuvwxyz";
 	let alpha_length = alpha.len();
