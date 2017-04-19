@@ -93,10 +93,10 @@ fn read_spellcheck_input<R: Read>(reader: R, corpus: &HashMap<String, usize>) {
 	}
 }
 
-fn spell_check(word_to_check: &str, corpus: &HashMap<String, usize>) -> String {
+fn spell_check(word_to_check: &str, corpus: &HashMap<String, usize>) -> (String, String) {
 	//if word is spelled correctly
 	if corpus.contains_key(word_to_check) {
-		word_to_check.to_string()
+		(word_to_check.to_string(), "".to_string())
 	}
 	//otherwise, try editing once
 	else {
@@ -124,18 +124,14 @@ fn spell_check(word_to_check: &str, corpus: &HashMap<String, usize>) -> String {
 		}
 
 		//formatting output string
-		let mut output_str = word_to_check.to_string();
-		output_str.push_str(", ");
-		//if no matches
 		if wordfreq_vec.is_empty() {
-			output_str.push_str("-");
-		}
-		//otherwise, get most probable match
-		else {
+			(word_to_check.to_string(), "-".to_string())
+		} else {
 			wordfreq_vec.sort();
+			let mut output_str = "".to_string();
 			output_str.push_str(&wordfreq_vec[0].word);
+			(word_to_check.to_string(), output_str)
 		}
-		output_str
 	}
 
 }
@@ -209,6 +205,40 @@ fn insert_edit(word: &str, output_vec: &mut Vec<String>) {
 }
 
 
-fn write_output<W: Write>(mut writer: W, line: &str ) {
-	writeln!(writer, "{}", line).unwrap();
+fn write_output<W: Write>(mut writer: W, line: &(String, String) ) {
+	if line.1.len() < 1 {
+		writeln!(writer, "{}", line.0).unwrap();
+	} else {
+		writeln!(writer, "{}, {}", line.0, line.1).unwrap();
+	}
+}
+
+
+#[cfg(test)]
+mod write_output_tests {
+	use super::write_output;
+	use std::io::Cursor;
+
+	#[test]
+	fn no_correction_needed() {
+		assert_write("hello\n", &("hello".to_string(), "".to_string()));
+	}
+
+	#[test]
+	fn one_correction() {
+		assert_write("hell, hello\n", &("hell".to_string(), "hello".to_string()));
+	}
+
+	#[test]
+	fn no_match() {
+		assert_write("w, -\n", &("w".to_string(), "-".to_string()));
+	}
+
+
+	fn assert_write(expected: &str, given: &(String, String)) {
+		let mut writer = Cursor::new(vec![]);
+		write_output(&mut writer, given);
+		assert_eq!(expected.as_bytes(), &*writer.into_inner());
+	}
+
 }
