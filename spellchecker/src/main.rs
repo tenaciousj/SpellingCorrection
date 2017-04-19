@@ -148,6 +148,7 @@ fn create_variations(word: &str) -> Vec<String> {
 }
 
 fn delete_edit(word: &str, output_vec: &mut Vec<String>) {
+	if word.len() == 1 { return; }
 	for i in 0..word.len() {
 		output_vec.push(word[..i].to_string() + &word[i+1..]);
 	}
@@ -156,12 +157,35 @@ fn delete_edit(word: &str, output_vec: &mut Vec<String>) {
 #[cfg(test)]
 mod delete_edit_tests {
 	use super::delete_edit;
-	// #[test]
-	// fn empty_input() {
+	#[test]
+	fn empty_input() {
+		assert_delete(&[], "");
+	}
 
-	// }
+	#[test]
+	fn one_input() {
+		assert_delete(&[], "x");
+	}
+
+	#[test]
+	fn two_input() {
+		assert_delete(&["y","x"], "xy");
+	}
+
+	#[test]
+	fn three_input() {
+		assert_delete(&["yz","xz","xy"], "xyz");
+	}
 
 	fn assert_delete(expected_output: &[&str], input: &str) {
+		let mut output = vec![];
+		delete_edit(input, &mut output);
+		assert!(expected_output.len()==output.len());
+		let iter = output.iter().zip(expected_output.iter());
+		for (o, eo) in iter {
+			assert_eq!(o, eo);
+		}
+
 		
 	}
 }
