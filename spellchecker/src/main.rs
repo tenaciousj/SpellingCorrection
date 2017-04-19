@@ -154,6 +154,7 @@ fn create_variations(word: &str) -> Vec<String> {
 }
 
 fn delete_edit(word: &str, output_vec: &mut Vec<String>) {
+	if word.len() == 1 { return; }
 	for i in 0..word.len() {
 		output_vec.push(word[..i].to_string() + &word[i+1..]);
 	}
@@ -162,12 +163,35 @@ fn delete_edit(word: &str, output_vec: &mut Vec<String>) {
 #[cfg(test)]
 mod delete_edit_tests {
 	use super::delete_edit;
-	// #[test]
-	// fn empty_input() {
+	#[test]
+	fn empty_input() {
+		assert_delete(&[], "");
+	}
 
-	// }
+	#[test]
+	fn one_input() {
+		assert_delete(&[], "x");
+	}
+
+	#[test]
+	fn two_input() {
+		assert_delete(&["y","x"], "xy");
+	}
+
+	#[test]
+	fn three_input() {
+		assert_delete(&["yz","xz","xy"], "xyz");
+	}
 
 	fn assert_delete(expected_output: &[&str], input: &str) {
+		let mut output = vec![];
+		delete_edit(input, &mut output);
+		assert!(expected_output.len()==output.len());
+		let iter = output.iter().zip(expected_output.iter());
+		for (o, eo) in iter {
+			assert_eq!(o, eo);
+		}
+
 		
 	}
 }
@@ -182,11 +206,73 @@ fn transpose_edit(word: &str, output_vec: &mut Vec<String>) {
 
 }
 
+#[cfg(test)]
+mod transpose_edit_tests {
+	use super::transpose_edit;
+	#[test]
+	fn empty_input() {
+		assert_transpose(&[], "");
+	}
+
+	#[test]
+	fn one_input() {
+		assert_transpose(&[], "x");
+	}
+
+	#[test]
+	fn two_input() {
+		assert_transpose(&["yx"], "xy");
+	}
+
+	#[test]
+	fn three_input() {
+		assert_transpose(&["yxz","xzy"], "xyz");
+	}
+
+	fn assert_transpose(expected_output: &[&str], input: &str) {
+		let mut output = vec![];
+		transpose_edit(input, &mut output);
+		assert!(expected_output.len()==output.len());
+		let iter = output.iter().zip(expected_output.iter());
+		for (o, eo) in iter {
+			assert_eq!(o, eo);
+		}
+
+		
+	}
+}
+
 fn replace_edit(word: &str, output_vec: &mut Vec<String>) {
 	let alphabet = "abcdefghijklmnopqrstuvwxyz";
 	for i in 0..word.len() {
 		for letter_i in 0..alphabet.len() {
 			output_vec.push(word[..i].to_string() + &alphabet[letter_i..letter_i+1] + &word[i+1..]);
+		}
+	}
+}
+
+#[cfg(test)]
+mod replace_edit_tests {
+	use super::replace_edit;
+	#[test]
+	fn empty_input() {
+		assert_replace("", "");
+	}
+
+	#[test]
+	fn one_input() {
+		let alphabet = "abcdefghijklmnopqrstuvwxyz";
+		assert_replace(&alphabet, "x");
+	}
+
+	fn assert_replace(expected_output: &str, input: &str) {
+		let mut output = vec![];
+		replace_edit(input, &mut output);
+		assert!(expected_output.len()==output.len());
+		let iter = output.iter().zip(expected_output.chars());
+		for (o, eo) in iter {
+			let ch = o.chars().nth(0).unwrap();
+			assert_eq!(ch, eo);
 		}
 	}
 }
@@ -201,6 +287,39 @@ fn insert_edit(word: &str, output_vec: &mut Vec<String>) {
 		for j in 0..alpha_length {
 			output_vec.push(first.to_string() + &alpha[j..j+1] + &second);
 		}
+	}
+}
+
+#[cfg(test)]
+mod insert_edit_tests {
+	use super::insert_edit;
+	#[test]
+	fn empty_input() {
+		assert_insert(&["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", 
+			"k", "l", "m", "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", 
+			"x", "y", "z"], "");
+	}
+
+	#[test]
+	fn one_input() {
+		assert_insert(&["ax", "bx", "cx", "dx", "ex", "fx", "gx", "hx", 
+			"ix", "jx", "kx", "lx", "mx", "nx", "ox", "px", "qx", "rx", "sx", 
+			"tx", "ux", "vx", "wx", "xx", "yx", "zx", "xa", "xb", "xc", "xd", 
+			"xe", "xf", "xg", "xh", "xi", "xj", "xk", "xl", "xm", "xn", "xo", 
+			"xp", "xq", "xr", "xs", "xt", "xu", "xv", "xw", "xx", "xy", "xz"],
+			"x");
+	}
+
+	fn assert_insert(expected_output: &[&str], input: &str) {
+		let mut output = vec![];
+		insert_edit(input, &mut output);
+		assert!(expected_output.len()==output.len());
+		let iter = output.iter().zip(expected_output.iter());
+		for (o, eo) in iter {
+			assert_eq!(o, eo);
+		}
+
+		
 	}
 }
 
