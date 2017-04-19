@@ -1,3 +1,6 @@
+extern crate regex;
+
+use regex::Regex;
 use std::env;
 use std::fs::File;
 use std::collections::HashMap;
@@ -42,9 +45,14 @@ fn main() {
     write_output(stdout(), &result);
 }
 
-fn read_corpus(filename: &str) -> std::io::Result<HashMap<String, usize>>{
+fn read_corpus(filename: &str) -> std::io::Result<HashMap<String, usize>> {
+	//read file if it exists
 	let file = File::open(filename)?;
+
+	//create hashmap for corpus
 	let mut hmap = HashMap::<String, usize>::new();
+
+	//fill corpus hashmap
 	let mut buf_reader = BufReader::new(file);
 	let mut contents = String::new();
 	buf_reader.read_to_string(&mut contents)?;
@@ -61,12 +69,13 @@ fn read_corpus(filename: &str) -> std::io::Result<HashMap<String, usize>>{
 fn read_input<R: Read>(reader: R) -> Vec<String> {
 	let mut words = vec![];
 	let mut lines = BufReader::new(reader).lines();
+	let re = Regex::new(r"[^\P{P}-]+").unwrap();
 
 	while let Some(Ok(line)) = lines.next() {
-		let in_words = line.trim().to_lowercase();
-		let split_words = in_words.split_whitespace();
-		for w in split_words {
-			words.push(w.to_string());
+		let clean_line = line.trim().to_lowercase();
+		let word = re.replace_all(clean_line.as_str(), "");
+		if word.len() > 0 {
+			words.push(word.to_string());
 		}
 	}
 	words
