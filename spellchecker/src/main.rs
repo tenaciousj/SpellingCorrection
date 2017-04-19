@@ -44,8 +44,6 @@ fn main() {
     for word in input {
     	write_output(stdout(), &spell_check(&word, &corpus));
     }
-    // let result = spell_check(&input, &corpus);
-    // write_output(stdout(), &result);
 }
 
 fn read_corpus(filename: &str) -> std::io::Result<HashMap<String, usize>> {
@@ -54,13 +52,16 @@ fn read_corpus(filename: &str) -> std::io::Result<HashMap<String, usize>> {
 
 	//create hashmap for corpus
 	let mut hmap = HashMap::<String, usize>::new();
+	let re = Regex::new(r"[^a-z\s]").unwrap();
+
 
 	//fill corpus hashmap
 	let mut buf_reader = BufReader::new(file);
 	let mut contents = String::new();
 	buf_reader.read_to_string(&mut contents)?;
 	let clean_contents = contents.trim().to_lowercase();
-	let split_contents = clean_contents.split_whitespace();
+	let cleaner_contents = re.replace_all(&clean_contents, "");
+	let split_contents = cleaner_contents.split_whitespace();
 	for c in split_contents {
   		let val = hmap.entry(c.to_string()).or_insert(0);
         // add 1 to value
@@ -72,7 +73,7 @@ fn read_corpus(filename: &str) -> std::io::Result<HashMap<String, usize>> {
 fn read_input<R: Read>(reader: R) -> Vec<String> {
 	let mut words = vec![];
 	let mut lines = BufReader::new(reader).lines();
-	let re = Regex::new(r"[^\P{P}-]+").unwrap();
+	let re = Regex::new(r"[^a-z]").unwrap();
 
 	while let Some(Ok(line)) = lines.next() {
 		let clean_line = line.trim().to_lowercase();
@@ -132,54 +133,59 @@ fn spell_check(word_to_check: &str, corpus: &HashMap<String, usize>) -> String {
 
 fn create_variations(word: &str) -> Vec<String> {
 	let mut vec_variations = vec![];
-
-	let mut temp_vec = delete_edit(&word);
+	let mut temp_vec = vec![];
+	delete_edit(&word, &mut temp_vec);
 	vec_variations.append(&mut temp_vec);
-	temp_vec = transpose_edit(&word);
+	transpose_edit(&word, &mut temp_vec);
 	vec_variations.append(&mut temp_vec);
-	temp_vec = replace_edit(&word);
+	replace_edit(&word, &mut temp_vec);
 	vec_variations.append(&mut temp_vec);
-	temp_vec = insert_edit(&word);
+	insert_edit(&word, &mut temp_vec);
 	vec_variations.append(&mut temp_vec);
 
 
 	vec_variations
 }
 
-fn delete_edit(word: &str) -> Vec<String> {
-	let mut output_vec = vec![];
+fn delete_edit(word: &str, output_vec: &mut Vec<String>) {
 	for i in 0..word.len() {
 		output_vec.push(word[..i].to_string() + &word[i+1..]);
 	}
-	output_vec
 }
 
-fn transpose_edit(word: &str) -> Vec<String> {
-	let mut output_vec = vec![];
+#[cfg(test)]
+mod delete_edit_tests {
+	use super::delete_edit;
+	// #[test]
+	// fn empty_input() {
+
+	// }
+
+	fn assert_delete(expected_output: &[&str], input: &str) {
+		
+	}
+}
+
+fn transpose_edit(word: &str, output_vec: &mut Vec<String>) {
 	if word.len() <= 1 {
-		return output_vec;
+		return;
 	}
 	for i in 0..word.len()-1 {
 		output_vec.push(word[..i].to_string() + &word[i+1..i+2] + &word[i..i+1] + &word[i+2..]);
 	}
 
-	output_vec
 }
 
-fn replace_edit(word: &str) -> Vec<String> {
-	let mut output_vec = vec![];
+fn replace_edit(word: &str, output_vec: &mut Vec<String>) {
 	let alphabet = "abcdefghijklmnopqrstuvwxyz";
 	for i in 0..word.len() {
 		for letter_i in 0..alphabet.len() {
 			output_vec.push(word[..i].to_string() + &alphabet[letter_i..letter_i+1] + &word[i+1..]);
 		}
 	}
-	
-	output_vec
 }
 
-fn insert_edit(word: &str) -> Vec<String> {
-	let mut output_vec = vec![];
+fn insert_edit(word: &str, output_vec: &mut Vec<String>) {
 	let alpha = "abcdefghijklmnopqrstuvwxyz";
 	let alpha_length = alpha.len();
 	let length = word.len() + 1;
@@ -190,15 +196,9 @@ fn insert_edit(word: &str) -> Vec<String> {
 			output_vec.push(first.to_string() + &alpha[j..j+1] + &second);
 		}
 	}
-
-	output_vec
 }
 
 
 fn write_output<W: Write>(mut writer: W, line: &str ) {
-	// for word in vec {
-	// 	writeln!(writer, "{}", word).unwrap();
-	// }
 	writeln!(writer, "{}", line).unwrap();
-	
 }
