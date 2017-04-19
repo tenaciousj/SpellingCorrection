@@ -31,15 +31,12 @@ impl PartialOrd for WordFreq {
 
 
 fn main() {
-    // let args = env::args().collect::<String>();
-    // let split_args = args.split_whitespace();
-    let mut args = env::args();
+    let args: Vec<String> = env::args().collect();
     if args.len() != 2 {
     	println!("usage: spellchecker corpus.txt");
     	return
     }
-    args.next();
-    let corpus_file = args.next().unwrap();
+    let corpus_file = &args[1];
     let corpus = read_corpus(&corpus_file).unwrap();
     let input = read_input(stdin());
 }
