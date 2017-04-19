@@ -41,8 +41,11 @@ fn main() {
     let corpus_file = &args[1];
     let corpus = read_corpus(&corpus_file).unwrap();
     let input = read_input(stdin());
-    let result = spell_check(&input, &corpus);
-    write_output(stdout(), &result);
+    for word in input {
+    	write_output(stdout(), &spell_check(&word, &corpus));
+    }
+    // let result = spell_check(&input, &corpus);
+    // write_output(stdout(), &result);
 }
 
 fn read_corpus(filename: &str) -> std::io::Result<HashMap<String, usize>> {
@@ -81,45 +84,55 @@ fn read_input<R: Read>(reader: R) -> Vec<String> {
 	words
 }
 
-fn spell_check(vec_str: &Vec<String>, corpus: &HashMap<String, usize>) -> Vec<String> {
-	let mut output_vec = vec![];
-	for check_word in vec_str {
-		if corpus.contains_key(check_word) {
-			let mut print_word = check_word.to_string();
-			print_word.push_str("\n");
-			output_vec.push(print_word);
-		} else {
-			let one_edit_vec = create_variations(&check_word);
-			let mut wordfreq_vec = Vec::<WordFreq>::new();
-			for edited_word in one_edit_vec {
-				if corpus.contains_key(&edited_word) {
-					wordfreq_vec.push( WordFreq { freq: corpus[&edited_word], word: edited_word.clone()});
-				}
-				let two_edit_vec = create_variations(&edited_word);
-				for edited_word2 in two_edit_vec {
-					if corpus.contains_key(&edited_word2) {
-						wordfreq_vec.push( WordFreq { freq: corpus[&edited_word2], word: edited_word2});
-					}
-				}
-			}
-			let mut output_str = check_word.clone();
-			output_str.push_str(", ");
-			if wordfreq_vec.is_empty() {
-				output_str.push_str("-");
-			} else {
-				wordfreq_vec.sort();
-				output_str.push_str(&wordfreq_vec[0].word);
-			}
-			output_str.push_str("\n");
-			output_vec.push(output_str.to_string());
-		}
+fn spell_check(word_to_check: &str, corpus: &HashMap<String, usize>) -> String {
+	//if word is spelled correctly
+	if corpus.contains_key(word_to_check) {
+		word_to_check.to_string()
 	}
-	output_vec
+	//otherwise, try editing once
+	else {
+		//create all one edit variations
+		let one_edit_vec = create_variations(&word_to_check);
+
+		//create word-frequency vector that we will sort later
+		let mut wordfreq_vec = Vec::<WordFreq>::new();
+
+		//look thru all one edit variations
+		for edited_word in one_edit_vec {
+			if corpus.contains_key(&edited_word) {
+				wordfreq_vec.push( WordFreq { freq: corpus[&edited_word], word: edited_word.clone()});
+			}
+
+			//create all two edit variations
+			let two_edit_vec = create_variations(&edited_word);
+
+			//look thru all two edit variations
+			for edited_word2 in two_edit_vec {
+				if corpus.contains_key(&edited_word2) {
+					wordfreq_vec.push( WordFreq { freq: corpus[&edited_word2], word: edited_word2});
+				}
+			}
+		}
+		let mut output_str = word_to_check.to_string();
+		output_str.push_str(", ");
+		//if no matches
+		if wordfreq_vec.is_empty() {
+			output_str.push_str("-");
+		}
+		//otherwise, get most probable match
+		else {
+			wordfreq_vec.sort();
+			output_str.push_str(&wordfreq_vec[0].word);
+		}
+		output_str
+	}
+
 }
 
 
-fn create_variations(word: &String) -> Vec<String> {
+fn create_variations(word: &str) -> Vec<String> {
 	let mut vec_variations = vec![];
+
 	let mut temp_vec = delete_edit(&word);
 	vec_variations.append(&mut temp_vec);
 	temp_vec = transpose_edit(&word);
@@ -182,9 +195,10 @@ fn insert_edit(word: &str) -> Vec<String> {
 }
 
 
-fn write_output<W: Write>(mut writer: W, vec: &Vec<String> ) {
-	for word in vec {
-		writeln!(writer, "{}", word).unwrap();
-	}
+fn write_output<W: Write>(mut writer: W, line: &str ) {
+	// for word in vec {
+	// 	writeln!(writer, "{}", word).unwrap();
+	// }
+	writeln!(writer, "{}", line).unwrap();
 	
 }

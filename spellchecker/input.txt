@@ -11,5 +11,3 @@ wor
 wo
 
 w
-
-hello,
