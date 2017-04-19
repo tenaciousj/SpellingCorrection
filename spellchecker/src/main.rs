@@ -76,7 +76,9 @@ fn spell_check(vec_str: &Vec<String>, corpus: &HashMap<String, usize>) -> Vec<St
 	let mut output_vec = vec![];
 	for check_word in vec_str {
 		if corpus.contains_key(check_word) {
-			output_vec.push(check_word.to_string());
+			let mut print_word = check_word.to_string();
+			print_word.push_str("\n");
+			output_vec.push(print_word);
 		} else {
 			let one_edit_vec = create_variations(&check_word);
 			let mut wordfreq_vec = Vec::<WordFreq>::new();
@@ -94,12 +96,12 @@ fn spell_check(vec_str: &Vec<String>, corpus: &HashMap<String, usize>) -> Vec<St
 			let mut output_str = check_word.clone();
 			output_str.push_str(", ");
 			if wordfreq_vec.is_empty() {
-				output_str.push_str("-\n");
+				output_str.push_str("-");
 			} else {
 				wordfreq_vec.sort();
 				output_str.push_str(&wordfreq_vec[0].word);
-				output_str.push_str("\n");
 			}
+			output_str.push_str("\n");
 			output_vec.push(output_str.to_string());
 		}
 	}
@@ -132,12 +134,11 @@ fn delete_edit(word: &str) -> Vec<String> {
 
 fn transpose_edit(word: &str) -> Vec<String> {
 	let mut output_vec = vec![];
-	if word.len() < 1 {
-		output_vec.push(word.to_string());
-	} else {
-		for i in 0..word.len()-1 {
-			output_vec.push(word[..i].to_string() + &word[i+1..i+2] + &word[i..i+1] + &word[i+2..]);
-		}
+	if word.len() <= 1 {
+		return output_vec;
+	}
+	for i in 0..word.len()-1 {
+		output_vec.push(word[..i].to_string() + &word[i+1..i+2] + &word[i..i+1] + &word[i+2..]);
 	}
 
 	output_vec
