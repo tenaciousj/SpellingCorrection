@@ -7,8 +7,8 @@
 * Assumptions
 * 1) Punctuation is stripped from input
 * 2) Corpus has no special formatting, exclusively words separated by spaces
-* 2) EOF stops the program (cmd+d on Mac)
-* 3) converts all input to lowercase
+* 3) EOF stops the program (cmd+d on Mac)
+* 4) Converts all input to lowercase
 */
 extern crate regex;
 
@@ -52,10 +52,7 @@ fn main() {
     }
     let corpus_file = &args[1];
     let corpus = read_corpus(&corpus_file).unwrap();
-    let input = read_input(stdin());
-    for word in input {
-    	write_output(stdout(), &spell_check(&word, &corpus));
-    }
+    read_spellcheck_input(stdin(), &corpus);
 }
 
 fn read_corpus(filename: &str) -> Result<HashMap<String, usize>> {
@@ -82,8 +79,7 @@ fn read_corpus(filename: &str) -> Result<HashMap<String, usize>> {
 	Ok(hmap)
 }
 
-fn read_input<R: Read>(reader: R) -> Vec<String> {
-	let mut words = vec![];
+fn read_spellcheck_input<R: Read>(reader: R, corpus: &HashMap<String, usize>) {
 	let mut lines = BufReader::new(reader).lines();
 	let re = Regex::new(r"[^a-z]").unwrap();
 
@@ -91,10 +87,10 @@ fn read_input<R: Read>(reader: R) -> Vec<String> {
 		let clean_line = line.trim().to_lowercase();
 		let word = re.replace_all(clean_line.as_str(), "");
 		if word.len() > 0 {
-			words.push(word.to_string());
+			//spell check as soon as you read the input
+			write_output(stdout(), &spell_check(&word, &corpus));
 		}
 	}
-	words
 }
 
 fn spell_check(word_to_check: &str, corpus: &HashMap<String, usize>) -> String {
@@ -126,6 +122,8 @@ fn spell_check(word_to_check: &str, corpus: &HashMap<String, usize>) -> String {
 				}
 			}
 		}
+
+		//formatting output string
 		let mut output_str = word_to_check.to_string();
 		output_str.push_str(", ");
 		//if no matches
