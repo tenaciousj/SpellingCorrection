@@ -163,6 +163,17 @@ fn replace_edit(word: &str) -> Vec<String> {
 
 fn insert_edit(word: &String) -> Vec<String> {
 	let mut output_vec = vec![];
+	let alpha = "abcdefghijklmnopqrstuvwxyz";
+	let alpha_length = alpha.len();
+	let length = word.len() + 1;
+	
+	for i in 0..length {
+		let (first, second) = word.split_at(i);
+		for j in 0..alpha_length {
+			output_vec.push(first.to_string() + &alpha[j..j+1] + &second);
+		}
+	}
+
 	output_vec
 }
 
