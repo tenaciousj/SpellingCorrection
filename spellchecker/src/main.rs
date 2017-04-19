@@ -1,10 +1,22 @@
+/**
+* spellchecker
+* a program that finds possible corrections for misspelled words
+* Consumes a training file on the command line
+* then reads words—one per line—from standard input
+*
+* Assumptions
+* 1) Punctuation is stripped from input
+* 2) Corpus has no special formatting, exclusively words separated by spaces
+* 2) EOF stops the program (cmd+d on Mac)
+* 3) converts all input to lowercase
+*/
 extern crate regex;
 
 use regex::Regex;
 use std::env;
 use std::fs::File;
 use std::collections::HashMap;
-use std::io::{Read,BufReader,BufRead,stdout,Write,stdin};
+use std::io::{Read,BufReader,BufRead,stdout,Write,stdin,Result};
 use std::cmp::Ordering;
 
 #[derive(Clone, Eq, PartialEq, Debug)]
@@ -46,7 +58,7 @@ fn main() {
     }
 }
 
-fn read_corpus(filename: &str) -> std::io::Result<HashMap<String, usize>> {
+fn read_corpus(filename: &str) -> Result<HashMap<String, usize>> {
 	//read file if it exists
 	let file = File::open(filename)?;
 
